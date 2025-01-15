@@ -187,7 +187,7 @@ def config() -> argparse.Namespace:
 
     # search config
     parser.add_argument("--max_depth", type=int, default=4, help="Max depth for search agents.")
-    parser.add_argument("--branching_factor", type=int, default=30, help="Branching factor at each step for the search agent.")
+    parser.add_argument("--branching_factor", type=int, default=5, help="Branching factor at each step for the search agent.")
     parser.add_argument("--search_algo", type=str, default="vf", help="Search algorithm to use", choices=["vf", "bfs", "dfs"])
     parser.add_argument("--vf_budget", type=int, default=20, help="Budget for the number of value function evaluations.")
     parser.add_argument("--value_function", type=str, default="gpt-4o-2024-08-06", help="What value function to use.", choices=["gpt4o","gpt-4o-2024-08-06"])
@@ -408,6 +408,7 @@ def test(
             step_idx = 0
             while True:
                 step_idx += 1
+                print("step_idx:{}".format(step_idx))
                 early_stop_flag, stop_info = early_stop(
                     trajectory, max_steps, early_stop_thresholds
                 )
@@ -429,6 +430,7 @@ def test(
                 
                 # BEGIN SEARCH
                 if args.agent_type == "search" and type(action) == list:
+                    print("start search")
                     evaluator = evaluator_router(
                         config_file, captioning_fn=eval_caption_image_fn
                     )
@@ -478,7 +480,7 @@ def test(
                                 score = value_function.evaluate_success(
                                     screenshots=last_screenshots[-(args.max_depth+1):] + [obs_img], actions=temp_action_history,
                                     current_url=env.page.url, last_reasoning=a["raw_prediction"],
-                                    intent=intent, models=["gpt-4o-2024-05-13"],
+                                    intent=intent, models=["gpt-4o-2024-08-06"],
                                     intent_images=images if len(images) > 0 else None)
                             else:
                                 raise NotImplementedError(f"Value function {args.value_function} not implemented")
@@ -493,18 +495,23 @@ def test(
                                 temp_trajectory, max_steps, early_stop_thresholds
                             )
                             if not temp_early_stop_flag:
-                                try:
-                                    # Generate possible action candidates for next step.
-                                    next_actions = agent.next_action(
-                                        temp_trajectory,
-                                        intent,
-                                        images=images,
-                                        meta_data=meta_data,
-                                        branching_factor=branching_factor
-                                    )
-                                except ValueError as e:
-                                    # get the error message
-                                    print('Failed to generate next actions:', e)
+                                retry_sub_search_count=0
+                                while retry_sub_search_count<=5:
+                                    try:
+                                        # Generate possible action candidates for next step.
+                                        next_actions = agent.next_action(
+                                            temp_trajectory,
+                                            intent,
+                                            images=images,
+                                            meta_data=meta_data,
+                                            branching_factor=branching_factor
+                                        )
+                                        break
+                                    except ValueError as e:
+                                        # get the error message
+                                        retry_sub_search_count=retry_sub_search_count+1
+                                        print("sub search count {}".format(retry_sub_search_count))
+                                        print('Failed to generate next actions:', e)
 
                         return score, temp_trajectory, temp_action_history, next_actions
                     
@@ -529,6 +536,7 @@ def test(
                             heapq.heappush(action_queue, item)
                     
                     while action_queue and search_counter < args.vf_budget:
+                        print("search counter {}".format(search_counter))
                         if args.search_algo == "bfs":
                             item = action_queue.pop(0)
                         elif args.search_algo == "dfs":
