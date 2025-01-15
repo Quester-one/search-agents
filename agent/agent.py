@@ -271,7 +271,15 @@ class SearchAgent(Agent):
         lm_config = self.lm_config
         n = 0
         while True:
-            responses = call_llm(lm_config, prompt, num_outputs=max(branching_factor * 2, 20))
+            call_count=0
+            while call_count<=5:
+                try:
+                    responses = call_llm(lm_config, prompt, num_outputs=max(branching_factor * 2, 20))
+                    break
+                except:
+                    call_count = call_count+1
+                    print("call repeat {}".format(call_count))
+
             if output_response:
                 print(f'Agent: {responses}', flush=True)
             if type(responses) == str:

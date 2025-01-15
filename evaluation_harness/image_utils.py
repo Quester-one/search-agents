@@ -1,7 +1,8 @@
 from typing import List
-
+from openai import OpenAI
 import numpy as np
 from PIL import Image
+from config_private import MODEL2KEY,MODEL2URL
 from skimage.metrics import structural_similarity as ssim
 from transformers import (
     Blip2ForConditionalGeneration,
@@ -13,50 +14,56 @@ def get_captioning_fn(
     device, dtype, model_name: str = "Salesforce/blip2-flan-t5-xl"
 ) -> callable:
     if "blip2" in model_name:
-        captioning_processor = Blip2Processor.from_pretrained(model_name)
+        captioning_processor = Blip2Processor.from_pretrained(model_name, use_fast=False)
         captioning_model = Blip2ForConditionalGeneration.from_pretrained(
             model_name, torch_dtype=dtype
+        )
+        captioning_model.to(device)
+
+        def caption_images(
+                images: List[Image.Image],
+                prompt: List[str] = None,
+                max_new_tokens: int = 32,
+        ) -> List[str]:
+            if prompt is None:
+                # Perform VQA
+                inputs = captioning_processor(
+                    images=images, return_tensors="pt"
+                ).to(device, dtype)
+                generated_ids = captioning_model.generate(
+                    **inputs, max_new_tokens=max_new_tokens
+                )
+                captions = captioning_processor.batch_decode(
+                    generated_ids, skip_special_tokens=True
+                )
+            else:
+                # Regular captioning. Prompt is a list of strings, one for each image
+                assert len(images) == len(
+                    prompt
+                ), "Number of images and prompts must match, got {} and {}".format(
+                    len(images), len(prompt)
+                )
+                inputs = captioning_processor(
+                    images=images, text=prompt, return_tensors="pt"
+                ).to(device, dtype)
+                generated_ids = captioning_model.generate(
+                    **inputs, max_new_tokens=max_new_tokens
+                )
+                captions = captioning_processor.batch_decode(
+                    generated_ids, skip_special_tokens=True
+                )
+
+            return captions
+    elif "Llama-3.2-11B-Vision-Instruct" == model_name:
+        caption_images = OpenAI(
+            api_key=MODEL2KEY[model_name],
+            base_url=MODEL2URL[model_name],
         )
     else:
         raise NotImplementedError(
             "Only BLIP-2 models are currently supported"
         )
-    captioning_model.to(device)
 
-    def caption_images(
-        images: List[Image.Image],
-        prompt: List[str] = None,
-        max_new_tokens: int = 32,
-    ) -> List[str]:
-        if prompt is None:
-            # Perform VQA
-            inputs = captioning_processor(
-                images=images, return_tensors="pt"
-            ).to(device, dtype)
-            generated_ids = captioning_model.generate(
-                **inputs, max_new_tokens=max_new_tokens
-            )
-            captions = captioning_processor.batch_decode(
-                generated_ids, skip_special_tokens=True
-            )
-        else:
-            # Regular captioning. Prompt is a list of strings, one for each image
-            assert len(images) == len(
-                prompt
-            ), "Number of images and prompts must match, got {} and {}".format(
-                len(images), len(prompt)
-            )
-            inputs = captioning_processor(
-                images=images, text=prompt, return_tensors="pt"
-            ).to(device, dtype)
-            generated_ids = captioning_model.generate(
-                **inputs, max_new_tokens=max_new_tokens
-            )
-            captions = captioning_processor.batch_decode(
-                generated_ids, skip_special_tokens=True
-            )
-
-        return captions
 
     return caption_images
 

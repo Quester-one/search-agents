@@ -2,7 +2,14 @@
 Generate the test data"""
 import json
 import os
-
+from config_private import CONFIG_DATASET, CONFIG_SHOPPING,CONFIG_CLASSIFIEDS,CONFIG_CLASSIFIEDS_RESET_TOKEN,CONFIG_REDDIT,CONFIG_WIKIPEDIA,CONFIG_HOMEPAGE
+os.environ["DATASET"] = CONFIG_DATASET
+os.environ["SHOPPING"] = CONFIG_SHOPPING
+os.environ["CLASSIFIEDS"] = CONFIG_CLASSIFIEDS
+os.environ["CLASSIFIEDS_RESET_TOKEN"] = CONFIG_CLASSIFIEDS_RESET_TOKEN
+os.environ["REDDIT"] = CONFIG_REDDIT
+os.environ["WIKIPEDIA"] = CONFIG_WIKIPEDIA
+os.environ["HOMEPAGE"] = CONFIG_HOMEPAGE
 from browser_env.env_config import *
 
 
@@ -16,7 +23,7 @@ def main() -> None:
         print(f"GITLAB: {GITLAB}")
         print(f"WIKIPEDIA: {WIKIPEDIA}")
         print(f"MAP: {MAP}")
-        
+
         inp_paths = ["config_files/wa/test_webarena.raw.json"]
         replace_map = {
             "__REDDIT__": REDDIT,
@@ -32,7 +39,9 @@ def main() -> None:
         print(f"REDDIT: {REDDIT}")
         print(f"SHOPPING: {SHOPPING}")
         inp_paths = [
-            "config_files/vwa/test_classifieds.raw.json", "config_files/vwa/test_shopping.raw.json", "config_files/vwa/test_reddit.raw.json",
+            # "config_files/vwa/test_classifieds.raw.json",
+            "config_files/vwa/test_shopping.raw.json",
+            # "config_files/vwa/test_reddit.raw.json",
         ]
         replace_map = {
             "__REDDIT__": REDDIT,
@@ -42,7 +51,7 @@ def main() -> None:
         }
     else:
         raise ValueError(f"Dataset not implemented: {DATASET}")
-        
+
     for inp_path in inp_paths:
         output_dir = inp_path.replace('.raw.json', '')
         os.makedirs(output_dir, exist_ok=True)

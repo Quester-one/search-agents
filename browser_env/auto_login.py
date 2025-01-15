@@ -2,6 +2,14 @@
 import argparse
 import glob
 import os
+from config_private import CONFIG_DATASET, CONFIG_SHOPPING,CONFIG_CLASSIFIEDS,CONFIG_CLASSIFIEDS_RESET_TOKEN,CONFIG_REDDIT,CONFIG_WIKIPEDIA,CONFIG_HOMEPAGE
+os.environ["DATASET"] = CONFIG_DATASET
+os.environ["SHOPPING"] = CONFIG_SHOPPING
+os.environ["CLASSIFIEDS"] = CONFIG_CLASSIFIEDS
+os.environ["CLASSIFIEDS_RESET_TOKEN"] = CONFIG_CLASSIFIEDS_RESET_TOKEN
+os.environ["REDDIT"] = CONFIG_REDDIT
+os.environ["WIKIPEDIA"] = CONFIG_WIKIPEDIA
+os.environ["HOMEPAGE"] = CONFIG_HOMEPAGE
 import time
 from concurrent.futures import ThreadPoolExecutor
 from itertools import combinations
@@ -173,7 +181,7 @@ def main(auth_folder: str = "./.auth") -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--site_list", nargs="+", default=[])
+    parser.add_argument("--site_list", nargs="+", default=["shopping"])
     parser.add_argument("--auth_folder", type=str, default="./.auth")
     args = parser.parse_args()
     if not args.site_list:

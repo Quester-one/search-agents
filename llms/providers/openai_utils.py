@@ -10,12 +10,15 @@ from typing import Any, Union
 
 import aiolimiter
 import openai
+import requests
 from openai import AsyncOpenAI, OpenAI
 from tqdm.asyncio import tqdm_asyncio
 
 if "OPENAI_API_BASE" not in os.environ:
-    client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-    aclient = AsyncOpenAI(api_key=os.environ["OPENAI_API_KEY"])
+    client = OpenAI(api_key=os.environ["OPENAI_API_KEY"],
+                    base_url=os.environ["OPENAI_URL"])
+    aclient = AsyncOpenAI(api_key=os.environ["OPENAI_API_KEY"],
+                          base_url=os.environ["OPENAI_URL"])
 else:
     # Used for running vllm models.
     print("WARNING: Using OPENAI_API_KEY=EMPTY")
@@ -250,6 +253,8 @@ async def agenerate_from_openai_chat_completion(
     return [x["choices"][0]["message"]["content"] for x in responses]
 
 
+
+
 @retry_with_exponential_backoff
 def generate_from_openai_chat_completion(
     messages: list[dict[str, str]],
@@ -267,7 +272,6 @@ def generate_from_openai_chat_completion(
         )
     if "OPENAI_API_BASE" in os.environ:
         assert "llama" in model.lower()
-
     response = client.chat.completions.create(
         model=model,
         messages=messages,

@@ -1,6 +1,5 @@
 import os
 from typing import Any
-
 import tiktoken
 from transformers import LlamaTokenizer, AutoTokenizer  # type: ignore
 
@@ -11,6 +10,8 @@ class Tokenizer(object):
             if "Llama-3" in model_name:
                 assert "OPENAI_API_BASE" in os.environ
                 self.tokenizer = AutoTokenizer.from_pretrained("meta-llama/Meta-Llama-3-8B-Instruct")
+            elif "gpt-4o" in  model_name:
+                self.tokenizer = tiktoken.encoding_for_model(model_name)
             else:
                 self.tokenizer = tiktoken.encoding_for_model(model_name)
         elif provider == "huggingface":

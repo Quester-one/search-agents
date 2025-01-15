@@ -10,6 +10,17 @@ import heapq
 import json
 import logging
 import os
+from config_private import CONFIG_DATASET, CONFIG_SHOPPING,CONFIG_CLASSIFIEDS,CONFIG_CLASSIFIEDS_RESET_TOKEN,\
+    CONFIG_REDDIT,CONFIG_WIKIPEDIA,CONFIG_HOMEPAGE,OPENAI_API_KEY,OPENAI_URL
+os.environ["DATASET"] = CONFIG_DATASET
+os.environ["SHOPPING"] = CONFIG_SHOPPING
+os.environ["CLASSIFIEDS"] = CONFIG_CLASSIFIEDS
+os.environ["CLASSIFIEDS_RESET_TOKEN"] = CONFIG_CLASSIFIEDS_RESET_TOKEN
+os.environ["REDDIT"] = CONFIG_REDDIT
+os.environ["WIKIPEDIA"] = CONFIG_WIKIPEDIA
+os.environ["HOMEPAGE"] = CONFIG_HOMEPAGE
+os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
+os.environ["OPENAI_URL"] = OPENAI_URL
 import random
 import subprocess
 import tempfile
@@ -82,7 +93,7 @@ def config() -> argparse.Namespace:
         help="Slow down the browser by the specified amount",
     )
     parser.add_argument(
-        "--action_set_tag", default="id_accessibility_tree", help="Action type"
+        "--action_set_tag", default="som", help="Action type"
     )
     parser.add_argument(
         "--observation_type",
@@ -93,7 +104,7 @@ def config() -> argparse.Namespace:
             "image",
             "image_som",
         ],
-        default="accessibility_tree",
+        default="image_som",
         help="Observation type",
     )
     parser.add_argument(
@@ -106,14 +117,14 @@ def config() -> argparse.Namespace:
     parser.add_argument("--save_trace_enabled", action="store_true")
     parser.add_argument("--sleep_after_execution", type=float, default=0.0)
 
-    parser.add_argument("--max_steps", type=int, default=30)
+    parser.add_argument("--max_steps", type=int, default=5)
 
     # agent config
-    parser.add_argument("--agent_type", type=str, default="prompt", choices=["prompt", "search"])
+    parser.add_argument("--agent_type", type=str, default="search", choices=["prompt", "search"])
     parser.add_argument(
         "--instruction_path",
         type=str,
-        default="agents/prompts/state_action_agent.json",
+        default="agent/prompts/jsons/p_som_cot_id_actree_3s.json",
     )
     parser.add_argument(
         "--parsing_failure_th",
@@ -128,7 +139,7 @@ def config() -> argparse.Namespace:
         default=5,
     )
 
-    parser.add_argument("--test_config_base_dir", type=str)
+    parser.add_argument("--test_config_base_dir", type=str,default="config_files/vwa/test_shopping")
 
     parser.add_argument(
         "--eval_captioning_model_device",
@@ -140,24 +151,24 @@ def config() -> argparse.Namespace:
     parser.add_argument(
         "--eval_captioning_model",
         type=str,
-        default="Salesforce/blip2-flan-t5-xl",
+        default="Llama-3.2-11B-Vision-Instruct",
         choices=["Salesforce/blip2-flan-t5-xl"],
         help="Captioning backbone for VQA-type evals.",
     )
     parser.add_argument(
         "--captioning_model",
         type=str,
-        default="Salesforce/blip2-flan-t5-xl",
+        default="Llama-3.2-11B-Vision-Instruct",
         choices=["Salesforce/blip2-flan-t5-xl", "llava-hf/llava-1.5-7b-hf"],
         help="Captioning backbone for accessibility tree alt text.",
     )
 
     # lm config
     parser.add_argument("--provider", type=str, default="openai")
-    parser.add_argument("--model", type=str, default="gpt-3.5-turbo-0613")
+    parser.add_argument("--model", type=str, default="gpt-4o-2024-08-06")
     parser.add_argument("--mode", type=str, default="chat")
     parser.add_argument("--temperature", type=float, default=1.0)
-    parser.add_argument("--top_p", type=float, default=0.9)
+    parser.add_argument("--top_p", type=float, default=0.95)
     parser.add_argument("--context_length", type=int, default=0)
     parser.add_argument("--max_tokens", type=int, default=384)
     parser.add_argument("--stop_token", type=str, default=None)
@@ -176,18 +187,18 @@ def config() -> argparse.Namespace:
 
     # search config
     parser.add_argument("--max_depth", type=int, default=4, help="Max depth for search agents.")
-    parser.add_argument("--branching_factor", type=int, default=5, help="Branching factor at each step for the search agent.")
+    parser.add_argument("--branching_factor", type=int, default=30, help="Branching factor at each step for the search agent.")
     parser.add_argument("--search_algo", type=str, default="vf", help="Search algorithm to use", choices=["vf", "bfs", "dfs"])
     parser.add_argument("--vf_budget", type=int, default=20, help="Budget for the number of value function evaluations.")
-    parser.add_argument("--value_function", type=str, default="gpt4o", help="What value function to use.", choices=["gpt4o"])
+    parser.add_argument("--value_function", type=str, default="gpt-4o-2024-08-06", help="What value function to use.", choices=["gpt4o","gpt-4o-2024-08-06"])
 
     # example config
     parser.add_argument("--test_idx", type=str, default=None, help="Idx to test")
     parser.add_argument("--test_start_idx", type=int, default=0)
-    parser.add_argument("--test_end_idx", type=int, default=910)
+    parser.add_argument("--test_end_idx", type=int, default=30)
 
     # logging related
-    parser.add_argument("--result_dir", type=str, default="")
+    parser.add_argument("--result_dir", type=str, default="shopping_gpt4o_som_search")
     args = parser.parse_args()
 
     # check the whether the action space is compatible with the observation space
@@ -463,7 +474,7 @@ def test(
                         start_time = time.time()
                         # Only evaluate terminating trajectories
                         try:
-                            if args.value_function in ["gpt4o"]:
+                            if args.value_function in ["gpt4o","gpt-4o-2024-08-06"]:
                                 score = value_function.evaluate_success(
                                     screenshots=last_screenshots[-(args.max_depth+1):] + [obs_img], actions=temp_action_history,
                                     current_url=env.page.url, last_reasoning=a["raw_prediction"],

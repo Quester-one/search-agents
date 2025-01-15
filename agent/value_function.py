@@ -10,7 +10,8 @@ from PIL import Image
 import requests
 import re
 
-client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+client = OpenAI(api_key=os.environ["OPENAI_API_KEY"],
+                base_url=os.environ["OPENAI_URL"])
 
 
 def evaluate_success(screenshots: list[Image.Image], actions: list[str], current_url: str, last_reasoning: str,
@@ -114,13 +115,21 @@ On the right track to success: "yes" or "no"
 
     all_responses = []
     for model in models:
-        response = client.chat.completions.create(
-            model=model,
-            messages=messages,
-            max_tokens=256,
-            top_p=top_p,
-            n=n // len(models)
-        )
+        call_count = 0
+        while call_count <= 5:
+            try:
+                response = client.chat.completions.create(
+                    model=model,
+                    messages=messages,
+                    max_tokens=256,
+                    top_p=top_p,
+                    n=n // len(models)
+                )
+                break
+            except:
+                call_count = call_count + 1
+                print("count num {}".format(call_count))
+
         all_responses.extend(response.choices)
 
     if should_log:
@@ -144,12 +153,11 @@ On the right track to success: "yes" or "no"
         except Exception as e:
             print(f"Error parsing response: {e}")
             score = 0.0
-        
+
         all_scores.append(score)
-    
+
     score = np.mean(all_scores)
     if should_log:
         print(f"Final score: {score}")
         print('=' * 30)
     return score
-
