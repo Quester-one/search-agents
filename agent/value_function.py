@@ -30,6 +30,7 @@ def evaluate_success(screenshots: list[Image.Image], actions: list[str], current
     """
     last_actions_str = '\n'.join(actions[:-1])
     last_response = actions[-1]
+    screenshots = [img.resize((img.width // 2, img.height // 2)) for img in screenshots]
     if intent_images is None:
         content = []
         for screenshot in screenshots:

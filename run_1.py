@@ -8,6 +8,7 @@ import copy
 import glob
 import heapq
 import json
+import cv2
 import logging
 import os
 from config_private import CONFIG_DATASET, CONFIG_SHOPPING_1, CONFIG_CLASSIFIEDS, CONFIG_CLASSIFIEDS_RESET_TOKEN, \
@@ -459,7 +460,6 @@ def test(
                         should_generate_next_actions = generate_next_actions
                         img_after_path = f"{task_id}_step{step_idx}_action{a_idx}_depth{depth}_curra{curr_a_idx}_after.png"
                         obs, _, terminated, _, info = env.step(a)
-                        # Save the image after the action.
                         obs_img = Image.fromarray(obs["image"])
                         all_inputs.append({
                             "text": obs["text"],

@@ -23,10 +23,10 @@ if __name__ == "__main__":
     #                    # "InternVL2-8B"
     #                    ]
     model_name_list = ["gpt-4o-2024-08-06"]
-    # image_path_list = ["agent/prompts/som_examples/som_example1.png","agent/prompts/som_examples/som_example2.png","agent/prompts/som_examples/som_example3.png"]
+    image_path_list = ["agent/prompts/som_examples/som_example1.png","agent/prompts/som_examples/som_example2.png","agent/prompts/som_examples/som_example3.png"]
     # image_path_list = ["agent/prompts/som_examples/som_example1.png","agent/prompts/som_examples/som_example2.png"]
     # image_path_list = ["agent/prompts/som_examples/som_example1.png"]
-    image_path_list = ["readme_document/vllm.png"]
+    # image_path_list = ["readme_document/vllm.png"]
     temperature = 0
     top_p = 0.9
     text = """
@@ -61,28 +61,10 @@ if __name__ == "__main__":
             temperature=temperature,
             top_p=top_p,
             max_tokens=1000,
-            # max_completion_tokens=1000,
+            # n=10
         )
         print(completion.choices[0].message.content)
         time1 = time.time() - start1
         print(f"计时: {time1:.4f}秒")
-        # sleep(2)
         print("end")
-
-    # model_name="Llama-3.2-90B-Vision-Instruct"
-    # openai = OpenAI(
-    #     api_key=MODEL2KEY[model_name],
-    #     base_url=MODEL2URL[model_name],
-    # )
-    #
-    # chat_completion = openai.chat.completions.create(
-    #     model=MODEL2MODEL[model_name],
-    #     messages=[{"role": "user", "content": "Hello"}],
-    # )
-    #
-    # print(chat_completion.choices[0].message.content)
-    # print(chat_completion.usage.prompt_tokens, chat_completion.usage.completion_tokens)
-    #
-    # # Hello! It's nice to meet you. Is there something I can help you with, or would you like to chat?
-    # # 11 25
 

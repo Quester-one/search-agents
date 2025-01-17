@@ -331,6 +331,15 @@ class MultimodalCoTPromptConstructor(CoTPromptConstructor):
     ) -> APIInput:
         """Return the require format for an API"""
         message: list[dict[str, str]] | str | list[str | Image.Image]
+
+        original_width, original_height = page_screenshot_img.size
+        new_width = original_width // 2
+        new_height = original_height // 2
+        page_screenshot_img = page_screenshot_img.resize((new_width, new_height), Image.LANCZOS)
+        if len(images)>0:
+            print("len(images)>0")
+
+
         if "openai" in self.lm_config.provider:
             if self.lm_config.mode == "chat":
                 message = [
