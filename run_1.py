@@ -10,11 +10,11 @@ import heapq
 import json
 import logging
 import os
-from config_private import CONFIG_DATASET, CONFIG_SHOPPING, CONFIG_CLASSIFIEDS, CONFIG_CLASSIFIEDS_RESET_TOKEN, \
+from config_private import CONFIG_DATASET, CONFIG_SHOPPING_1, CONFIG_CLASSIFIEDS, CONFIG_CLASSIFIEDS_RESET_TOKEN, \
     CONFIG_REDDIT, CONFIG_WIKIPEDIA, CONFIG_HOMEPAGE, OPENAI_API_KEY, OPENAI_URL
 
 os.environ["DATASET"] = CONFIG_DATASET
-os.environ["SHOPPING"] = CONFIG_SHOPPING
+os.environ["SHOPPING"] = CONFIG_SHOPPING_1
 os.environ["CLASSIFIEDS"] = CONFIG_CLASSIFIEDS
 os.environ["CLASSIFIEDS_RESET_TOKEN"] = CONFIG_CLASSIFIEDS_RESET_TOKEN
 os.environ["REDDIT"] = CONFIG_REDDIT
@@ -140,7 +140,7 @@ def config() -> argparse.Namespace:
         default=5,
     )
 
-    parser.add_argument("--test_config_base_dir", type=str, default="config_files/vwa/test_shopping")
+    parser.add_argument("--test_config_base_dir", type=str, default="config_files/vwa/test_shopping1")
 
     parser.add_argument(
         "--eval_captioning_model_device",
@@ -201,7 +201,7 @@ def config() -> argparse.Namespace:
     # example config
     parser.add_argument("--test_idx", type=str, default=None, help="Idx to test")
     parser.add_argument("--test_start_idx", type=int, default=0)
-    parser.add_argument("--test_end_idx", type=int, default=30)
+    parser.add_argument("--test_end_idx", type=int, default=10)
 
     # logging related
     parser.add_argument("--result_dir", type=str, default="shopping_gpt4o_som_search")
@@ -373,7 +373,7 @@ def test(
                     subprocess.run(
                         [
                             "python",
-                            "browser_env/auto_login.py",
+                            "browser_env/auto_login_1.py",
                             "--auth_folder",
                             temp_dir,
                             "--site_list",

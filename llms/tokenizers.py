@@ -12,6 +12,8 @@ class Tokenizer(object):
                 self.tokenizer = AutoTokenizer.from_pretrained("meta-llama/Meta-Llama-3-8B-Instruct")
             elif "gpt-4o" in  model_name:
                 self.tokenizer = tiktoken.encoding_for_model(model_name)
+            elif "gemini" in  model_name:
+                self.tokenizer = tiktoken.encoding_for_model("gpt-4o-2024-08-06")
             else:
                 self.tokenizer = tiktoken.encoding_for_model(model_name)
         elif provider == "huggingface":

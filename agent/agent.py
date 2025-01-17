@@ -2,10 +2,11 @@ import argparse
 import re
 import json
 from typing import Any, Optional
-
+import time
 import tiktoken
 from beartype import beartype
 from PIL import Image
+import copy
 
 from agent.prompts import *
 from browser_env import Trajectory
@@ -274,7 +275,11 @@ class SearchAgent(Agent):
             call_count=0
             while call_count<=5:
                 try:
+                    start_inner = time.time()
                     responses = call_llm(lm_config, prompt, num_outputs=max(branching_factor * 2, 20))
+                    time_inner = time.time() - start_inner
+                    print(f"内循环: {time_inner:.4f}秒")
+                    print(responses)
                     break
                 except:
                     call_count = call_count+1
@@ -326,7 +331,7 @@ class SearchAgent(Agent):
                     action = create_none_action()
                     action["raw_prediction"] = response
                     return [action]
-                
+
         # Find top branching_factor actions.
         top_actions = sorted(parsed_actions_count, key=parsed_actions_count.get, reverse=True)[:branching_factor]
         top_action_count = sum([parsed_actions_count[action] for action in top_actions])
