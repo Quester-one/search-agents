@@ -193,11 +193,12 @@ def config() -> argparse.Namespace:
                         help="Branching factor at each step for the search agent.")
     parser.add_argument("--search_algo", type=str, default="vf", help="Search algorithm to use",
                         choices=["vf", "bfs", "dfs"])
-    parser.add_argument("--vf_budget", type=int, default=5, help="Budget for the number of value function evaluations.")
-    parser.add_argument("--value_function", type=str, default="gpt-4o-2024-08-06", help="What value function to use.",
+    parser.add_argument("--vf_budget", type=int, default=20, help="Budget for the number of value function evaluations.")
+    parser.add_argument("--value_function", type=str, default="gpt-4o-mini-2024-07-18", help="What value function to use.",
                         choices=["gpt-4o-2024-08-06",
                                  "gemini-1.5-pro",
-                                 "gemini-1.5-flash-latest"])
+                                 "gemini-1.5-flash-latest",
+                                 "gpt-4o-mini-2024-07-18"])
 
     # example config
     parser.add_argument("--test_idx", type=str, default=None, help="Idx to test")
@@ -488,7 +489,7 @@ def test(
                         start_value = time.time()
                         try:
                             if args.value_function in ["gpt-4o-2024-08-06", "gemini-1.5-pro",
-                                                       "gemini-1.5-flash-latest"]:
+                                                       "gemini-1.5-flash-latest","gpt-4o-mini-2024-07-18"]:
                                 score = value_function.evaluate_success(
                                     screenshots=last_screenshots[-(args.max_depth + 1):] + [obs_img],
                                     actions=temp_action_history,
