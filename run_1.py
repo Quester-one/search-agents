@@ -193,17 +193,24 @@ def config() -> argparse.Namespace:
                         help="Branching factor at each step for the search agent.")
     parser.add_argument("--search_algo", type=str, default="vf", help="Search algorithm to use",
                         choices=["vf", "bfs", "dfs"])
-    parser.add_argument("--vf_budget", type=int, default=20, help="Budget for the number of value function evaluations.")
-    parser.add_argument("--value_function", type=str, default="gpt-4o-mini-2024-07-18", help="What value function to use.",
+    parser.add_argument("--vf_budget", type=int, default=20,
+                        help="Budget for the number of value function evaluations.")
+    parser.add_argument("--value_function", type=str, default="gpt-4o-2024-08-06", help="What value function to use.",
                         choices=["gpt-4o-2024-08-06",
                                  "gemini-1.5-pro",
                                  "gemini-1.5-flash-latest",
-                                 "gpt-4o-mini-2024-07-18"])
+                                 "gpt-4o-mini-2024-07-18",
+                                 "claude-3-5-sonnet-20240620",
+                                 "Qwen2-VL-7B-Instruct",
+                                 "Pixtral-12B-2409",
+                                 "Phi-3.5-vision-instruct",
+                                 "Llama-3.2-11B-Vision-Instruct",
+                                 "Qwen2-VL-72B-Instruct2"])
 
     # example config
     parser.add_argument("--test_idx", type=str, default=None, help="Idx to test")
     parser.add_argument("--test_start_idx", type=int, default=0)
-    parser.add_argument("--test_end_idx", type=int, default=10)
+    parser.add_argument("--test_end_idx", type=int, default=25)
 
     # logging related
     parser.add_argument("--result_dir", type=str, default="shopping_gpt4o_som_search")
@@ -488,8 +495,11 @@ def test(
                         # Only evaluate terminating trajectories
                         start_value = time.time()
                         try:
-                            if args.value_function in ["gpt-4o-2024-08-06", "gemini-1.5-pro",
-                                                       "gemini-1.5-flash-latest","gpt-4o-mini-2024-07-18"]:
+                            if args.value_function in ["gpt-4o-2024-08-06", "gemini-1.5-pro", "Qwen2-VL-7B-Instruct",
+                                                       "Pixtral-12B-2409", "Phi-3.5-vision-instruct",
+                                                       "Qwen2-VL-72B-Instruct2",
+                                                       "gemini-1.5-flash-latest", "gpt-4o-mini-2024-07-18",
+                                                       "claude-3-5-sonnet-20240620", "Llama-3.2-11B-Vision-Instruct"]:
                                 score = value_function.evaluate_success(
                                     screenshots=last_screenshots[-(args.max_depth + 1):] + [obs_img],
                                     actions=temp_action_history,

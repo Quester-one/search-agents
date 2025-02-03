@@ -9,9 +9,8 @@ import numpy as np
 from PIL import Image
 import requests
 import re
+from config_private import MODEL2URL,MODEL2KEY,MODEL2MODEL
 
-client = OpenAI(api_key=os.environ["OPENAI_API_KEY"],
-                base_url=os.environ["OPENAI_URL"])
 
 
 def evaluate_success(screenshots: list[Image.Image], actions: list[str], current_url: str, last_reasoning: str,
@@ -28,6 +27,8 @@ def evaluate_success(screenshots: list[Image.Image], actions: list[str], current
     Returns:
         float: The value of the state.
     """
+    client = OpenAI(api_key=MODEL2KEY[models[0]],
+                    base_url=MODEL2URL[models[0]])
     last_actions_str = '\n'.join(actions[:-1])
     last_response = actions[-1]
     screenshots = [img.resize((img.width // 2, img.height // 2)) for img in screenshots]
@@ -120,16 +121,16 @@ On the right track to success: "yes" or "no"
         while call_count <= 5:
             try:
                 response = client.chat.completions.create(
-                    model=model,
+                    model=MODEL2MODEL[model],
                     messages=messages,
                     max_tokens=256,
                     top_p=top_p,
                     n=n // len(models)
                 )
                 break
-            except:
+            except Exception as e:
                 call_count = call_count + 1
-                print("count num {}".format(call_count))
+                print(f"Error occurred on attempt {call_count}: {str(e)}")
 
         all_responses.extend(response.choices)
 
